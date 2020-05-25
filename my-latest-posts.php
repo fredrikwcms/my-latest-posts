@@ -36,8 +36,19 @@ function mlp_shortcode()    {
     return $output;
 }
 
+function mlp_show_post($atts = [])    {
+    $atts = array_change_key_case((array)$atts, CASE_LOWER);
+    $textProps = shortcode_atts([
+        'text'  =>  'Hello',
+        'color' => 'red',
+    ], $atts);
+    return "<h1 style='color: " . $textProps['color'] . "'>" . $textProps['text'] . "</h1>";
+}
+
 function mlp_init() {
     add_shortcode('latest-posts', 'mlp_shortcode');
+
+    add_shortcode('show-post', 'mlp_show_post');
 }
 
 add_action('init', 'mlp_init');
