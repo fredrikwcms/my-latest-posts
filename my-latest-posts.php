@@ -12,20 +12,38 @@
 *   Domain Path:    /languages
 */
 
-function mlp_shortcode()    {
+function mlp_shortcode($user_atts = [], $content = null, $tag = '')    {
+    $default_atts = [
+        'posts' => 3,
+        'title' =>  __('Latest Posts', 'my-latest-posts'),
+    ];
+
+    $atts = shortcode_atts($default_atts, $user_atts, $tag);
+
     $posts = new WP_Query([
-        'posts_per_page'    =>  3,
+        'posts_per_page'    =>  $atts['posts'],
     ]);
 
-    $output = "<h2>Latest Posts</h2>";
+    $output = "<h2>" . esc_html($atts['title']) . "</h2>";
     if($posts->have_posts())    {
+        // Start the list
         $output .= "<ul>";
         while ($posts->have_posts()) {
             $posts->the_post();
+            // Each post that we get
             $output .= "<li>";
             $output .= "<a href='" . get_the_permalink() . "'>";
             $output .= get_the_title();
-            $output .= "</a></li>";
+            $output .= "</a>";
+            // Show the categories and time since posted
+            $output .= "<small>";
+            $output .= " in ";
+            $output .= get_the_category_list(', ');
+            $output .= " by";
+            $output .= human_time_diff(get_the_time('U')) . ' ago ';
+            $output .= "</small>";
+
+            $output .= "</li>";
         }
         wp_reset_postdata();
         $output .= "</ul>";
@@ -36,19 +54,8 @@ function mlp_shortcode()    {
     return $output;
 }
 
-function mlp_show_post($atts = [])    {
-    $atts = array_change_key_case((array)$atts, CASE_LOWER);
-    $textProps = shortcode_atts([
-        'text'  =>  'Hello',
-        'color' => 'red',
-    ], $atts);
-    return "<h1 style='color: " . $textProps['color'] . "'>" . $textProps['text'] . "</h1>";
-}
-
 function mlp_init() {
     add_shortcode('latest-posts', 'mlp_shortcode');
-
-    add_shortcode('show-post', 'mlp_show_post');
 }
 
 add_action('init', 'mlp_init');
